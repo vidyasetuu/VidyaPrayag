@@ -1,0 +1,37 @@
+package com.littlebridge.vidyaprayag.di
+
+import com.littlebridge.vidyaprayag.core.database.AppDatabase
+import com.littlebridge.vidyaprayag.core.database.DatabaseFactory
+import com.littlebridge.vidyaprayag.core.prefs.PreferenceManager
+import com.littlebridge.vidyaprayag.core.prefs.PreferenceRepository
+import com.littlebridge.vidyaprayag.core.prefs.createDataStore
+import com.littlebridge.vidyaprayag.feature.schools.data.local.RoomSchoolLocalDataSource
+import com.littlebridge.vidyaprayag.feature.schools.data.local.SchoolLocalDataSource
+import kotlinx.cinterop.ExperimentalForeignApi
+import org.koin.core.module.Module
+import org.koin.dsl.module
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSUserDomainMask
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun platformModule(): Module = module {
+    single { DatabaseFactory() }
+    single<AppDatabase> { get<DatabaseFactory>().createBuilder().build() }
+    single { get<AppDatabase>().schoolDao() }
+    single<SchoolLocalDataSource> { RoomSchoolLocalDataSource(get()) }
+
+    single {
+        createDataStore {
+            val directory = NSFileManager.defaultManager.URLForDirectory(
+                directory = NSDocumentDirectory,
+                inDomain = NSUserDomainMask,
+                appropriateForURL = null,
+                create = true,
+                error = null
+            )
+            requireNotNull(directory).path + "/edu_trust_prefs.preferences_pb"
+        }
+    }
+    single<PreferenceRepository> { PreferenceManager(get()) }
+}

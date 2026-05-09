@@ -1,0 +1,47 @@
+package com.littlebridge.vidyaprayag.di
+
+import com.littlebridge.vidyaprayag.core.prefs.PreferenceRepository
+import com.littlebridge.vidyaprayag.feature.schools.data.remote.KtorSchoolApi
+import com.littlebridge.vidyaprayag.feature.schools.data.repository.SchoolRepositoryImpl
+import com.littlebridge.vidyaprayag.feature.schools.domain.repository.SchoolRepository
+import com.littlebridge.vidyaprayag.feature.schools.domain.usecase.GetSchoolsUseCase
+import com.littlebridge.vidyaprayag.presentation.MainViewModel
+import io.ktor.client.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
+import org.koin.core.context.startKoin
+import org.koin.core.module.Module
+import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.module
+
+val commonModule = module {
+    // Remote
+    single {
+        HttpClient {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+    }
+    single { KtorSchoolApi(get()) }
+
+    // Repositories
+    single<SchoolRepository> { SchoolRepositoryImpl(get(), get()) }
+
+    // UseCases
+    factory { GetSchoolsUseCase(get()) }
+}
+
+val viewModelModule = module {
+    factory { MainViewModel(get(), get()) }
+}
+
+fun initKoin(appDeclaration: KoinAppDeclaration = {}) =
+    startKoin {
+        appDeclaration()
+        modules(commonModule, viewModelModule, platformModule())
+    }
+
+// For iOS
+fun initKoin() = initKoin {}
