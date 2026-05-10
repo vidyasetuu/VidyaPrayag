@@ -2,16 +2,18 @@ package com.littlebridge.vidyaprayag.feature.auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.littlebridge.vidyaprayag.core.network.NetworkResult
 import com.littlebridge.vidyaprayag.feature.auth.domain.model.*
 import com.littlebridge.vidyaprayag.feature.auth.domain.repository.AuthRepository
+import com.littlebridge.vidyaprayag.util.AppLogger
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 sealed class AuthStep {
-    object Identifier : AuthStep()
-    object LoginPassword : AuthStep()
-    object SignupDetails : AuthStep()
-    object Otp : AuthStep()
+    data object Identifier : AuthStep()
+    data object LoginPassword : AuthStep()
+    data object SignupDetails : AuthStep()
+    data object Otp : AuthStep()
 }
 
 data class AuthUiState(
@@ -51,8 +53,9 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            repository.checkUser(currentState.identifier)
-                .onSuccess { flow ->
+            when (val result = repository.checkUser(currentState.identifier)) {
+                is NetworkResult.Success -> {
+                    val flow = result.data
                     _state.update { 
                         it.copy(
                             isLoading = false,
@@ -68,9 +71,15 @@ class AuthViewModel(
                         repository.sendOtp(currentState.identifier)
                     }
                 }
-                .onFailure { e ->
+                is NetworkResult.Error -> {
+                    AppLogger.e("AuthViewModel", "Check user error: ${result.message}")
+                    _state.update { it.copy(isLoading = false, error = result.message) }
+                }
+                is NetworkResult.ConnectionError -> {
+                    AppLogger.e("AuthViewModel", "Check user: Connection Error")
                     _state.update { it.copy(isLoading = false, error = "Connection error. Please try again.") }
                 }
+            }
         }
     }
 
@@ -122,10 +131,18 @@ class AuthViewModel(
                 else -> return@launch
             }
 
-            result.onSuccess {
-                _state.update { it.copy(isLoading = false, isAuthSuccessful = true) }
-            }.onFailure { e ->
-                _state.update { it.copy(isLoading = false, error = e.message ?: "Action failed") }
+            when (result) {
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(isLoading = false, isAuthSuccessful = true) }
+                }
+                is NetworkResult.Error -> {
+                    AppLogger.e("AuthViewModel", "Submit error: ${result.message}")
+                    _state.update { it.copy(isLoading = false, error = result.message) }
+                }
+                is NetworkResult.ConnectionError -> {
+                    AppLogger.e("AuthViewModel", "Submit: Connection Error")
+                    _state.update { it.copy(isLoading = false, error = "Connection error. Please try again.") }
+                }
             }
         }
     }

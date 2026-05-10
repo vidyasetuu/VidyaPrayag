@@ -27,6 +27,8 @@ fun Route.authRouting() {
                 val request = call.receive<CheckUserRequest>()
                 val identifier = request.identifier.trim()
                 
+                println("DEBUG: Checking user with identifier: '$identifier'")
+                
                 val user = dbQuery {
                     UserTable.selectAll()
                         .where { UserTable.contact eq identifier }
@@ -41,9 +43,15 @@ fun Route.authRouting() {
                     else -> AuthFlow.SIGNUP_PHONE
                 }
 
+                println("DEBUG: Determined flow: $flow for '$identifier'")
                 call.respond(UserFlowResponse(flow))
+            } catch (e: ContentTransformationException) {
+                println("DEBUG: Content transformation error: ${e.message}")
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid data format: ${e.message}"))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid request"))
+                println("DEBUG: Unexpected error in /check-user: ${e.message}")
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Server error: ${e.message}"))
             }
         }
 
@@ -86,7 +94,7 @@ fun Route.authRouting() {
                     role = request.role
                 ))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Signup failed"))
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Signup failed: ${e.message}"))
             }
         }
 
@@ -102,7 +110,7 @@ fun Route.authRouting() {
                 }
 
                 if (user == null) {
-                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid credentials"))
+                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse("User not found"))
                     return@post
                 }
 
@@ -112,13 +120,13 @@ fun Route.authRouting() {
                     val storedHash = user[UserTable.passwordHash]
                     
                     if (storedHash != hashPassword(password)) {
-                        call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid credentials"))
+                        call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid password"))
                         return@post
                     }
                 } else {
                     // If phone, check OTP (mocked to "123456" for now)
                     if (request.otp != "123456") {
-                        call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid OTP"))
+                        call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid OTP code"))
                         return@post
                     }
                 }
@@ -130,7 +138,7 @@ fun Route.authRouting() {
                     role = user[UserTable.role]
                 ))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Login failed"))
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Login failed: ${e.message}"))
             }
         }
 

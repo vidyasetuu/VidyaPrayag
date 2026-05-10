@@ -14,10 +14,7 @@ import com.littlebridge.vidyaprayag.util.Environment
 import com.littlebridge.vidyaprayag.util.AppLogger
 import io.ktor.client.*
 import io.ktor.client.plugins.*
-import io.ktor.client.plugins.observer.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
@@ -33,26 +30,10 @@ val commonModule = module {
                 json(Json { ignoreUnknownKeys = true })
             }
             
-            // Comprehensive Logging Workaround
-            install(ResponseObserver) {
-                onResponse { response ->
-                    AppLogger.d("HTTP Client", "--- RESPONSE RECEIVED ---")
-                    AppLogger.d("HTTP Client", "URL: ${response.call.request.url}")
-                    AppLogger.d("HTTP Client", "METHOD: ${response.call.request.method}")
-                    AppLogger.d("HTTP Client", "STATUS: ${response.status.value} ${response.status.description}")
-                    AppLogger.d("HTTP Client", "HEADERS: ${response.headers}")
-                }
-            }
-
             install(HttpTimeout) {
                 requestTimeoutMillis = 15000
                 connectTimeoutMillis = 15000
                 socketTimeoutMillis = 15000
-            }
-
-            defaultRequest {
-                AppLogger.d("HTTP Client", "--- REQUEST PREPARING ---")
-                AppLogger.d("HTTP Client", "URL: ${this.url}")
             }
         }
     }

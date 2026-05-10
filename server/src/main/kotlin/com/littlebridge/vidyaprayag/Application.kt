@@ -9,6 +9,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.Json
 
 fun main() {
     DatabaseFactory.init()
@@ -19,8 +20,12 @@ fun main() {
 
 fun Application.module() {
     install(ContentNegotiation) {
-        json()
+        json(Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        })
     }
+
     routing {
         get("/") {
             call.respondText("Ktor: ${Greeting().greet()}")
