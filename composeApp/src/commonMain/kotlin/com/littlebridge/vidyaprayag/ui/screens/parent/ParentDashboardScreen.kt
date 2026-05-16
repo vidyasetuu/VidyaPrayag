@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.CompareArrows
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.littlebridge.vidyaprayag.domain.util.UiState
 import com.littlebridge.vidyaprayag.feature.schools.domain.model.School
+import com.littlebridge.vidyaprayag.navigation.Destination
+import com.littlebridge.vidyaprayag.navigation.LocalAppNavigator
 import com.littlebridge.vidyaprayag.presentation.ParentDashboardViewModel
 import com.littlebridge.vidyaprayag.ui.components.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -33,18 +35,12 @@ fun ParentDashboardScreen() {
     val viewModel: ParentDashboardViewModel = koinViewModel()
     val schoolsState by viewModel.schools.collectAsState()
     val shortlist by viewModel.shortlist.collectAsState()
+    val hasChildProfile by viewModel.hasChildProfile.collectAsState()
+    val navigator = LocalAppNavigator.current
 
     BaseScreen(
         bottomBar = {
-            VidyaPrayagBottomBar(
-                items = listOf(
-                    BottomNavItem("Discover", Icons.Default.Search, isSelected = true),
-                    BottomNavItem("Compare", Icons.AutoMirrored.Filled.CompareArrows),
-                    BottomNavItem("Dashboard", Icons.Default.Analytics),
-                    BottomNavItem("Hub", Icons.Default.AccountBalance),
-                    BottomNavItem("Admin", Icons.Default.DashboardCustomize)
-                )
-            )
+            ParentDashboardBottomBar(selectedTab = ParentTab.DISCOVER)
         }
     ) { paddingValues,scrollModi ->
         when (val state = schoolsState) {
@@ -62,7 +58,9 @@ fun ParentDashboardScreen() {
                 DashboardContent(
                     schools = state.data,
                     shortlist = shortlist,
+                    hasChildProfile = hasChildProfile,
                     onToggleShortlist = viewModel::toggleShortlist,
+                    onBuildProfile = { navigator.navigateTo(Destination.ChildBasicInfo) },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -74,7 +72,9 @@ fun ParentDashboardScreen() {
 private fun DashboardContent(
     schools: List<School>,
     shortlist: Set<String>,
+    hasChildProfile: Boolean,
     onToggleShortlist: (String) -> Unit,
+    onBuildProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -84,6 +84,12 @@ private fun DashboardContent(
     ) {
         item {
             HeaderSection(schoolCount = schools.size)
+        }
+
+        if (!hasChildProfile) {
+            item {
+                BuildProfileCard(onClick = onBuildProfile)
+            }
         }
 
         item {
@@ -326,6 +332,32 @@ private fun SchoolDashboardCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BuildProfileCard(onClick: () -> Unit) {
+    VidyaPrayagCard(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundColor = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Row(
+            modifier = Modifier.clickable { onClick() }.padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Box(
+                modifier = Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.AddCircle, null, tint = Color.White, modifier = Modifier.size(32.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Build A Profile For Your Child", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Curation of the best learning path aligned with developmental milestones.", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.7f))
+            }
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Color.White)
         }
     }
 }

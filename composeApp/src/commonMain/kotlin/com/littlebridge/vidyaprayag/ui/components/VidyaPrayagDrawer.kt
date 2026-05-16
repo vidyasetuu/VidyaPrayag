@@ -109,9 +109,11 @@ private fun DrawerContent(userRole: String, onNavigate: (Destination) -> Unit) {
         
         if (userRole == "PARENT") {
             Text("PARENT OPTIONS", modifier = Modifier.padding(vertical = 12.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, letterSpacing = 2.sp)
-            DrawerItem(Icons.Default.School, "Child Progress")
-            DrawerItem(Icons.Default.Payments, "Fee Payment")
-            DrawerItem(Icons.AutoMirrored.Filled.Chat, "Teacher Chat")
+            DrawerItem(Icons.Default.Explore, "Career Path") { onNavigate(Destination.CareerPath) }
+            DrawerItem(Icons.Default.CardGiftcard, "Scholarship For You") { onNavigate(Destination.Scholarships) }
+            DrawerItem(Icons.AutoMirrored.Filled.FactCheck, "Daily Status") { onNavigate(Destination.DailyStatus) }
+            DrawerItem(Icons.Default.Assessment, "Report") { onNavigate(Destination.ParentReports) }
+            DrawerItem(Icons.Default.Groups, "Schedule PTM") { onNavigate(Destination.ParentSchedulePTM) }
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f))

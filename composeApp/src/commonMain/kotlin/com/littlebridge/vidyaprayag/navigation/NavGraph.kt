@@ -22,6 +22,45 @@ sealed interface Destination {
     data object ParentDashboard : Destination
 
     @Serializable
+    data object ChildBasicInfo : Destination
+
+    @Serializable
+    data object YourPreferences : Destination
+
+    @Serializable
+    data object LocationRequest : Destination
+
+    @Serializable
+    data object AllSet : Destination
+
+    @Serializable
+    data object TrackProgress : Destination
+
+    @Serializable
+    data object ParentAnnouncements : Destination
+
+    @Serializable
+    data object ParentMessages : Destination
+
+    @Serializable
+    data object Fees : Destination
+
+    @Serializable
+    data object CareerPath : Destination
+
+    @Serializable
+    data object Scholarships : Destination
+
+    @Serializable
+    data object DailyStatus : Destination
+
+    @Serializable
+    data object ParentReports : Destination
+
+    @Serializable
+    data object ParentSchedulePTM : Destination
+
+    @Serializable
     data object SchoolDashboard : Destination
 
     @Serializable
@@ -99,6 +138,58 @@ fun NavGraph(navController: NavHostController) {
 
         composable<Destination.ParentDashboard> {
             com.littlebridge.vidyaprayag.ui.screens.parent.ParentDashboardScreen()
+        }
+
+        composable<Destination.ChildBasicInfo> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ChildBasicInfoScreen()
+        }
+
+        composable<Destination.YourPreferences> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.YourPreferencesScreen()
+        }
+
+        composable<Destination.LocationRequest> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.LocationRequestScreen()
+        }
+
+        composable<Destination.AllSet> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.AllSetScreen()
+        }
+
+        composable<Destination.TrackProgress> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.TrackProgressScreen()
+        }
+
+        composable<Destination.ParentAnnouncements> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ParentAnnouncementScreen()
+        }
+
+        composable<Destination.ParentMessages> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ParentMessageScreen()
+        }
+
+        composable<Destination.Fees> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.FeeScreen()
+        }
+
+        composable<Destination.CareerPath> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.CareerPathScreen()
+        }
+
+        composable<Destination.Scholarships> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ScholarshipsScreen()
+        }
+
+        composable<Destination.DailyStatus> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.DailyStatusScreen()
+        }
+
+        composable<Destination.ParentReports> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ParentReportsScreen()
+        }
+
+        composable<Destination.ParentSchedulePTM> {
+            com.littlebridge.vidyaprayag.ui.screens.parent.ParentSchedulePTMScreen()
         }
 
         composable<Destination.SchoolDashboard> {

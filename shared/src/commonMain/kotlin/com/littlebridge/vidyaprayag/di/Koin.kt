@@ -7,6 +7,18 @@ import com.littlebridge.vidyaprayag.feature.schools.domain.repository.SchoolRepo
 import com.littlebridge.vidyaprayag.feature.schools.domain.usecase.GetSchoolsUseCase
 import com.littlebridge.vidyaprayag.presentation.MainViewModel
 import com.littlebridge.vidyaprayag.presentation.ParentDashboardViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.FeeViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ChildBasicInfoViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.YourPreferencesViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.LocationRequestViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.CareerPathViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ScholarshipsViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.DailyStatusViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ParentReportsViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ParentSchedulePTMViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ParentAnnouncementViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.ParentMessageViewModel
+import com.littlebridge.vidyaprayag.feature.parent.presentation.TrackProgressViewModel
 import com.littlebridge.vidyaprayag.feature.admin.presentation.SchoolDashboardViewModel
 import com.littlebridge.vidyaprayag.feature.admin.presentation.InstitutionalBasicOBViewModel
 import com.littlebridge.vidyaprayag.feature.admin.presentation.BrandingInfoOBViewModel
@@ -79,6 +91,18 @@ val commonModule = module {
 val viewModelModule = module {
     factory { MainViewModel(get(), get()) }
     factory { ParentDashboardViewModel(get()) }
+    factory { FeeViewModel() }
+    factory { ChildBasicInfoViewModel() }
+    factory { YourPreferencesViewModel() }
+    factory { LocationRequestViewModel() }
+    factory { CareerPathViewModel() }
+    factory { ScholarshipsViewModel() }
+    factory { DailyStatusViewModel() }
+    factory { ParentReportsViewModel() }
+    factory { ParentSchedulePTMViewModel() }
+    factory { ParentAnnouncementViewModel() }
+    factory { ParentMessageViewModel() }
+    factory { TrackProgressViewModel() }
     factory { SchoolDashboardViewModel() }
     factory { InstitutionalBasicOBViewModel() }
     factory { BrandingInfoOBViewModel() }

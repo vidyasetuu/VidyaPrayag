@@ -18,6 +18,9 @@ class ParentDashboardViewModel(
     private val _shortlist = MutableStateFlow<Set<String>>(emptySet())
     val shortlist: StateFlow<Set<String>> = _shortlist.asStateFlow()
 
+    private val _hasChildProfile = MutableStateFlow(false)
+    val hasChildProfile: StateFlow<Boolean> = _hasChildProfile.asStateFlow()
+
     init {
         loadSchools()
     }
