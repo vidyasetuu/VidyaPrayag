@@ -24,6 +24,23 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.ktor.serverCore)
     implementation(libs.ktor.serverNetty)
+    implementation("io.ktor:ktor-server-content-negotiation:3.4.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.3")
+    implementation("io.ktor:ktor-server-status-pages:3.4.3")
+    implementation("io.ktor:ktor-server-cors:3.4.3")
+    implementation("io.ktor:ktor-server-auth:3.4.3")
+    implementation("io.ktor:ktor-server-auth-jwt:3.4.3")
+    implementation("io.ktor:ktor-server-call-logging:3.4.3")
+
+    // Database
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.postgres)
+    implementation(libs.hikaricp)
+    implementation(libs.sqlite)
+    implementation(libs.dotenv)
+
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
 }

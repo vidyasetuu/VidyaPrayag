@@ -86,6 +86,30 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+    
+    buildFeatures {
+        buildConfig = true
+    }
+    
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "AUTH_BASE_URL", "\"http://192.168.1.9:8080\"")
+            buildConfigField("String", "SCHOOL_BASE_URL", "\"http://192.168.1.9:8080\"")
+        }
+        create("staging") {
+            dimension = "environment"
+            buildConfigField("String", "AUTH_BASE_URL", "\"https://vidyaprayag-1.onrender.com\"")
+            buildConfigField("String", "SCHOOL_BASE_URL", "\"https://vidyaprayag-1.onrender.com\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "AUTH_BASE_URL", "\"https://vidyaprayag-1.onrender.com\"")
+            buildConfigField("String", "SCHOOL_BASE_URL", "\"https://vidyaprayag-1.onrender.com\"")
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
