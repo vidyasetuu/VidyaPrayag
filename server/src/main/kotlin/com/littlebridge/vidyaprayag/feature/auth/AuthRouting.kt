@@ -319,7 +319,7 @@ fun Route.authRouting() {
                     if (verifiedAny == null) {
                         call.fail(
                             "Phone signup requires a verified OTP. Call /send-otp then /verify-otp first.",
-                            HttpStatusCode.PreconditionRequired, "OTP_REQUIRED"
+                            HttpStatusCode.BadRequest, "OTP_REQUIRED"
                         )
                         return@post
                     }

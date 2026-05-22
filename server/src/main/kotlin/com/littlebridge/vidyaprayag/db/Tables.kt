@@ -234,7 +234,7 @@ object AdmissionEnquiriesTable : UUIDTable("admission_enquiries", "id") {
     val date        = varchar("date", 12) // YYYY-MM-DD
     val status      = varchar("status", 16).default("new")
     val profilePic  = text("profile_pic").nullable()
-    val source      = varchar("source", 32).nullable()
+    val admissionSource = varchar("source", 32).nullable()
     val notes       = text("notes").nullable()
     val assignedTo  = uuid("assigned_to").nullable()
     val convertedAt = timestamp("converted_at").nullable()
