@@ -92,14 +92,19 @@ object DatabaseFactory {
 
         Database.connect(dataSource)
 
-        val autoCreate = (dotenv["AUTO_CREATE_TABLES"] ?: System.getenv("AUTO_CREATE_TABLES"))
-            .equals("true", ignoreCase = true)
+        val autoCreateRaw = (dotenv["AUTO_CREATE_TABLES"] ?: System.getenv("AUTO_CREATE_TABLES"))
+        val autoCreate = autoCreateRaw.equals("true", ignoreCase = true)
+
+        println("DB_INIT: isPostgres=$isPostgres, AUTO_CREATE_TABLES='$autoCreateRaw' -> $autoCreate")
 
         if (!isPostgres || autoCreate) {
-            // Local-dev convenience OR explicit opt-in for production auto-creation
+            println("DB_INIT: Running SchemaUtils.createMissingTablesAndColumns for ${allTables.size} tables...")
             transaction {
                 SchemaUtils.createMissingTablesAndColumns(*allTables)
             }
+            println("DB_INIT: Schema check/creation completed.")
+        } else {
+            println("DB_INIT: Skipping auto-creation (AUTO_CREATE_TABLES is not 'true').")
         }
 
         // CMS seed (landing + app_config). Always idempotent — only inserts
@@ -107,7 +112,21 @@ object DatabaseFactory {
         val seedCms = (dotenv["APP_SEED_CMS"] ?: System.getenv("APP_SEED_CMS") ?: "true")
             .equals("true", ignoreCase = true)
         if (seedCms) {
-            CmsSeed.ensureLandingAndConfig()
+            println("DB_INIT: Running CMS seed...")
+            try {
+                CmsSeed.ensureLandingAndConfig()
+                println("DB_INIT: CMS seed completed successfully.")
+            } catch (e: Exception) {
+                System.err.println("DB_INIT_ERROR: CMS Seeding failed!")
+                e.printStackTrace()
+                if (isPostgres && !autoCreate) {
+                    System.err.println("DB_INIT_TIP: It looks like tables are missing in Postgres.")
+                    System.err.println("DB_INIT_TIP: Please set the environment variable AUTO_CREATE_TABLES=true in Render.")
+                }
+                // Rethrow to fail fast if seeding is critical, or just let it be.
+                // Given the crash logs, we'll rethrow to keep behavior consistent but with better logs.
+                throw e
+            }
         }
     }
 
