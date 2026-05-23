@@ -33,7 +33,7 @@ import kotlinx.serialization.json.Json
 internal object OtpHttpClient {
 
     /** Json codec — lenient because every SMS gateway has its own quirks. */
-    val json: Json = Json {
+    val jsonCodec: Json = Json {
         ignoreUnknownKeys = true
         isLenient = true
         encodeDefaults = true
@@ -46,6 +46,10 @@ internal object OtpHttpClient {
      * OTP sends until the JVM is restarted.
      */
     val client: HttpClient by lazy {
+        val codec = jsonCodec  // capture into a plain local so the install
+                               // lambda's resolution of `json(...)` is
+                               // unambiguous (Ktor's `json` function vs our
+                               // property name).
         HttpClient(CIO) {
             expectSuccess = false  // we inspect statuses manually per provider
             install(HttpTimeout) {
@@ -53,7 +57,7 @@ internal object OtpHttpClient {
                 requestTimeoutMillis = 8_000
                 socketTimeoutMillis = 15_000
             }
-            install(ContentNegotiation) { json(this@OtpHttpClient.json) }
+            install(ContentNegotiation) { json(codec) }
             install(Logging) { level = LogLevel.NONE }  // privacy: no code in logs
         }
     }

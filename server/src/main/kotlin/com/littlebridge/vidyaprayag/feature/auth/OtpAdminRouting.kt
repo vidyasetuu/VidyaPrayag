@@ -39,6 +39,8 @@ import com.littlebridge.vidyaprayag.db.DatabaseFactory.dbQuery
 import com.littlebridge.vidyaprayag.db.OtpDeliveryAttemptsTable
 import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryDispatcher
 import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryRequest
+import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryResult
+import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpEnv
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.routing.Route
@@ -133,23 +135,23 @@ fun Route.otpAdminRouting() {
                 call.fail("forbidden", HttpStatusCode.Forbidden, "ADMIN_FORBIDDEN")
                 return@get
             }
-            @Suppress("UNCHECKED_CAST")
-            val snap = OtpDeliveryDispatcher.snapshot()
-            val providers = (snap["known_providers"] as List<Map<String, Any>>).map {
+            val providers = OtpDeliveryDispatcher.knownProviders.map {
                 ProviderInfo(
-                    name = it["name"].toString(),
-                    channel = it["channel"].toString(),
-                    configured = it["configured"] as Boolean,
+                    name = it.name,
+                    channel = it.channel.wireName,
+                    configured = runCatching { it.isConfigured() }.getOrDefault(false),
                 )
             }
             call.ok(
                 OtpDiagnosticResponse(
                     providers = providers,
-                    channelOrderDefault = snap["channel_order_default"] as List<String>,
-                    providerOrderOverride = snap["provider_order_override"] as List<String>,
-                    pinnedProvider = snap["pinned_provider"].toString(),
-                    consoleFallbackEnabled = snap["console_fallback_enabled"] as Boolean,
-                    devReturnCode = snap["dev_return_code"] as Boolean,
+                    channelOrderDefault = OtpEnv.getList(
+                        "OTP_CHANNEL_ORDER", listOf("sms", "whatsapp", "email")
+                    ),
+                    providerOrderOverride = OtpEnv.getList("OTP_PROVIDER_ORDER", emptyList()),
+                    pinnedProvider = OtpEnv.get("OTP_PROVIDER") ?: "",
+                    consoleFallbackEnabled = OtpEnv.getBool("OTP_ENABLE_CONSOLE_FALLBACK", true),
+                    devReturnCode = OtpEnv.getBool("OTP_DEV_RETURN_CODE", false),
                 ),
                 message = "OTP provider diagnostic",
             )
@@ -220,19 +222,45 @@ fun Route.otpAdminRouting() {
                 )
             )
 
+            val nowStr = java.time.Instant.now().toString()
             val attemptDtos = outcome.attempts.mapIndexed { idx, a ->
                 when (a) {
-                    is com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryResult.Sent ->
-                        OtpAttemptDto(idx, a.providerName, a.channel.wireName, "sent",
-                            a.providerMessageId, null, a.latencyMillis.toInt(), null,
-                            a.rawResponseSummary, java.time.Instant.now().toString())
-                    is com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryResult.Failed ->
-                        OtpAttemptDto(idx, a.providerName, a.channel.wireName, "failed",
-                            null, a.httpStatus, a.latencyMillis.toInt(), a.reason,
-                            a.rawResponseSummary, java.time.Instant.now().toString())
-                    is com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryResult.Skipped ->
-                        OtpAttemptDto(idx, a.providerName, a.channel.wireName, "skipped",
-                            null, null, 0, a.reason, null, java.time.Instant.now().toString())
+                    is OtpDeliveryResult.Sent -> OtpAttemptDto(
+                        attemptIndex = idx,
+                        providerName = a.providerName,
+                        channel = a.channel.wireName,
+                        status = "sent",
+                        providerMessageId = a.providerMessageId,
+                        httpStatus = null,
+                        latencyMs = a.latencyMillis.toInt(),
+                        reason = null,
+                        rawResponse = a.rawResponseSummary,
+                        createdAt = nowStr,
+                    )
+                    is OtpDeliveryResult.Failed -> OtpAttemptDto(
+                        attemptIndex = idx,
+                        providerName = a.providerName,
+                        channel = a.channel.wireName,
+                        status = "failed",
+                        providerMessageId = null,
+                        httpStatus = a.httpStatus,
+                        latencyMs = a.latencyMillis.toInt(),
+                        reason = a.reason,
+                        rawResponse = a.rawResponseSummary,
+                        createdAt = nowStr,
+                    )
+                    is OtpDeliveryResult.Skipped -> OtpAttemptDto(
+                        attemptIndex = idx,
+                        providerName = a.providerName,
+                        channel = a.channel.wireName,
+                        status = "skipped",
+                        providerMessageId = null,
+                        httpStatus = null,
+                        latencyMs = 0,
+                        reason = a.reason,
+                        rawResponse = null,
+                        createdAt = nowStr,
+                    )
                 }
             }
             call.ok(

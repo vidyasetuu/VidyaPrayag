@@ -28,7 +28,6 @@
  */
 package com.littlebridge.vidyaprayag.feature.auth
 
-import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpChannel
 import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryDispatcher
 import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryRequest
 import com.littlebridge.vidyaprayag.feature.auth.delivery.OtpDeliveryResult
@@ -127,5 +126,4 @@ private fun OtpDeliveryResult.toRecord(): DeliveryAttemptRecord = when (this) {
     )
 }
 
-/** Re-export so external code can import OtpChannel from this facade if needed. */
-typealias OtpChannelAlias = OtpChannel
+

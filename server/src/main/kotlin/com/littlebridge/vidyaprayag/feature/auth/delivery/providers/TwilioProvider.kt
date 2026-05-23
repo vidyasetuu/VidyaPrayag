@@ -42,8 +42,8 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
-import io.ktor.util.encodeBase64
 import org.slf4j.LoggerFactory
+import java.util.Base64
 
 object TwilioProvider : OtpProvider {
 
@@ -90,7 +90,8 @@ object TwilioProvider : OtpProvider {
             append("Body", body)
         }
 
-        val basic = "$sid:$token".toByteArray(Charsets.UTF_8).encodeBase64()
+        val basic = Base64.getEncoder()
+            .encodeToString("$sid:$token".toByteArray(Charsets.UTF_8))
 
         return try {
             val response = OtpHttpClient.client.post(endpoint) {

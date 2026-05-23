@@ -111,6 +111,12 @@ fun Application.module() {
         appStatusRouting()
         authRouting()
 
+        // Ops-only — entire route group is unmounted (404) unless
+        // OTP_ADMIN_TOKEN env var is set. See feature/auth/OtpAdminRouting.kt.
+        // Safe to leave wired up on Render free tier — no overhead when
+        // the token env is empty.
+        otpAdminRouting()
+
         // Authenticated
         userDetailsRouting()
         userProfileRouting()
